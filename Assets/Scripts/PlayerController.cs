@@ -4,13 +4,18 @@ using UnityEngine.SceneManagement;
 using System.Collections;
 using UnityEngine.UI;
 
+using static UnityEngine.Color;
+
 public class PlayerController : MonoBehaviour
 {
     public float speed;
     public Rigidbody rb;
-    public Text scoreText;
     private int score = 0;
     public int health = 5;
+    public Text scoreText;
+    public Text healthText;
+    public Image winLoseBG;
+    public Text winLoseText;
     void OnTriggerEnter(Collider other)
     {
         if (other.tag == "Pickup")
@@ -24,14 +29,21 @@ public class PlayerController : MonoBehaviour
         if (other.tag == "Trap")
         {
             health--;
-            Debug.Log("Health: " + health);
+            SetHealthText();
         }
         if (other.tag == "Goal")
         {
-            Debug.Log("You win!");
+            Win();
 
 
         }
+    }
+    void Win()
+    {
+        winLoseBG.color = new Color32(0, 255, 0, 255);
+        winLoseText.color = new Color32(0, 0, 0, 255);
+        winLoseText.text = "You Win!";
+        winLoseBG.gameObject.SetActive(true);
     }
 
 
@@ -40,6 +52,26 @@ public class PlayerController : MonoBehaviour
     {
         scoreText.text = "Score : " + this.score;
 
+    }
+    void SetHealthText()
+    {
+        healthText.text = "health: " + this.health;
+    }
+
+    IEnumerator LoadScene(float seconds)
+    {
+        yield return new WaitForSeconds(seconds);
+        SceneManager.LoadScene("Maze");
+        health = 5;
+        score = 0;
+    }
+
+    void Lose()
+    {
+        winLoseBG.color = new Color32(255, 0, 0, 255);
+        winLoseText.color = new Color32(255, 255, 255, 255);
+        winLoseText.text = "Game Over!";
+        winLoseBG.gameObject.SetActive(true);
     }
 
 
@@ -69,10 +101,14 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        if (Input.GetButton("Cancel"))
+        {
+            SceneManager.LoadScene("menu");
+        }
         if (this.health == 0)
         {
-            Debug.Log("Game Over!");
-            SceneManager.LoadScene(0, LoadSceneMode.Single);
+            Lose();
+            StartCoroutine(LoadScene(3));
 
         }
     }
